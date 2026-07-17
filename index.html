@@ -17,6 +17,7 @@
     </script>
     <style>
         .disc-table th, .disc-table td { border: 1px solid #e2e8f0; padding: 10px; text-align: center; }
+        .brutal-list p { margin-bottom: 8px; line-height: 1.5; }
     </style>
 </head>
 <body class="bg-gray-100 text-gray-800 font-sans antialiased">
@@ -25,7 +26,7 @@
         <!-- Header Utama -->
         <div class="border-b pb-4 mb-6 text-center">
             <h1 class="text-3xl font-extrabold text-blue-600">Online Assessment Platform</h1>
-            <p class="text-sm text-gray-500 mt-1">DISC Personality (24 Soal) & Big Five Personality (50 Soal)</p>
+            <p class="text-sm text-gray-500 mt-1">DISC Circumplex (24 Soal) & Big Five Personality (50 Soal)</p>
         </div>
 
         <!-- Timer Box -->
@@ -37,7 +38,7 @@
             <span class="text-2xl font-mono font-bold tracking-wider" id="timer">00:00</span>
         </div>
 
-        <!-- STEP 1: Form Registrasi Identitas Karyawan -->
+        <!-- STEP 1: Form Registrasi -->
         <div id="step-registration" class="block">
             <h2 class="text-xl font-bold mb-4 text-gray-700 border-l-4 border-blue-600 pl-2">Data Diri Kandidat</h2>
             <form id="form-kandidat" onsubmit="startDiscTest(event)">
@@ -55,7 +56,7 @@
             </form>
         </div>
 
-        <!-- STEP 2: Tampilan Kertas Soal DISC -->
+        <!-- STEP 2: Kertas Soal DISC -->
         <div id="step-disc" class="hidden">
             <div class="mb-6 bg-blue-50 p-4 rounded-lg border border-blue-100">
                 <h2 class="text-xl font-bold text-blue-900">Bagian 1: Tes Kepribadian DISC (24 Soal)</h2>
@@ -70,7 +71,7 @@
             </form>
         </div>
 
-        <!-- STEP 3: Tampilan Kertas Soal Big Five OCEAN (50 Soal) -->
+        <!-- STEP 3: Kertas Soal Big Five OCEAN -->
         <div id="step-ocean" class="hidden">
             <div class="mb-4 bg-green-50 p-4 rounded-lg border border-green-100">
                 <h2 class="text-xl font-bold text-green-900 border-l-4 border-green-600 pl-2">Bagian 2: Tes Big Five Personality (50 Soal)</h2>
@@ -84,16 +85,16 @@
             </form>
         </div>
 
-        <!-- STEP 4: Pengiriman Data Akhir -->
+        <!-- STEP 4: Loading / Finish -->
         <div id="step-finish" class="hidden text-center py-10">
             <div id="loading-status">
                 <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-                <h2 class="text-xl font-bold text-gray-700">Mengkalkulasi Hasil & Membuat Radar Grafik...</h2>
+                <h2 class="text-xl font-bold text-gray-700">Mengkalkulasi Hasil & Membuat Kompas Profil DISC...</h2>
             </div>
             <div id="success-status" class="hidden">
                 <p class="text-6xl mb-4">🎉</p>
                 <h2 class="text-2xl font-extrabold text-green-600">Assessment Selesai!</h2>
-                <p class="text-gray-600 mt-2">Hasil tes serta grafik DISC & Radar Chart OCEAN telah terkirim ke <strong>hr@1000daysfund.org</strong>.</p>
+                <p class="text-gray-600 mt-2">Hasil analisis Kompas DISC & Radar Chart OCEAN telah terkirim ke <strong>hr@1000daysfund.org</strong>.</p>
             </div>
         </div>
 
@@ -110,31 +111,38 @@
                 <tr><td class="font-bold py-1 text-gray-600">Tanggal Pengisian</td><td class="py-1">: <span id="pdf-tanggal"></span></td></tr>
             </table>
             
-            <h2 class="text-lg font-bold mt-6 mb-3 border-b-2 border-blue-600 pb-1 text-blue-700">1. HASIL 3 GRAFIK PROFIL DISC</h2>
-            <div class="grid grid-cols-3 gap-4 my-4">
-                <div class="border p-2 rounded bg-gray-50 text-center">
-                    <p class="text-xs font-bold text-gray-700 mb-1">Grafik 1: MOST (Mask)</p>
-                    <div class="w-full flex justify-center"><canvas id="chart-most" width="160" height="150"></canvas></div>
+            <!-- BAGIAN 1: KOMPAS DISC -->
+            <h2 class="text-lg font-bold mt-6 mb-3 border-b-2 border-blue-600 pb-1 text-blue-700">1. HASIL ANALISA KOMPAS KEPRIBADIAN DISC</h2>
+            <div style="display: table; width: 100%; margin-bottom: 20px;">
+                <div style="display: table-cell; width: 45%; vertical-align: middle; text-align: center;">
+                    <canvas id="chart-disc-circumplex" width="250" height="250" class="mx-auto"></canvas>
                 </div>
-                <div class="border p-2 rounded bg-gray-50 text-center">
-                    <p class="text-xs font-bold text-gray-700 mb-1">Grafik 2: LEAST (Core)</p>
-                    <div class="w-full flex justify-center"><canvas id="chart-least" width="160" height="150"></canvas></div>
-                </div>
-                <div class="border p-2 rounded bg-gray-50 text-center">
-                    <p class="text-xs font-bold text-gray-700 mb-1">Grafik 3: CHANGE (Mirror)</p>
-                    <div class="w-full flex justify-center"><canvas id="chart-change" width="160" height="150"></canvas></div>
+                <div style="display: table-cell; width: 55%; vertical-align: top; padding-left: 20px;" class="text-xs space-y-2 font-mono brutal-list">
+                    <p class="font-bold text-sm text-gray-700 mb-2">Skor Linear Sifat (Kombinasi M - L):</p>
+                    <p>• Dominance (D): <span id="score-val-d" class="font-bold"></span></p>
+                    <p>• Influence (I): <span id="score-val-i" class="font-bold"></span></p>
+                    <p>• Steadiness (S): <span id="score-val-s" class="font-bold"></span></p>
+                    <p>• Conscientiousness (C): <span id="score-val-c" class="font-bold"></span></p>
+                    <p class="mt-4 pt-2 border-t text-blue-700 font-bold">Kecenderungan Utama: <span id="disc-primary-style"></span></p>
                 </div>
             </div>
 
+            <div class="bg-blue-50 p-4 rounded-lg border border-blue-200 text-xs text-gray-800 mb-6">
+                <p class="font-bold text-sm mb-2 text-blue-900">Kesimpulan Kecenderungan Kerja DISC:</p>
+                <div id="pdf-disc-kesimpulan" class="space-y-3 brutal-list"></div>
+            </div>
+
+            <!-- BAGIAN 2: OCEAN -->
             <h2 class="text-lg font-bold mt-8 mb-3 border-b-2 border-green-600 pb-1 text-green-700">2. HASIL RADAR CHART BIG FIVE PERSONALITY (OCEAN)</h2>
-            <div class="my-4" style="display: table; width: 100%;">
+            <div style="display: table; width: 100%;">
                 <div style="display: table-cell; width: 45%; vertical-align: middle; text-align: center;">
                     <canvas id="chart-ocean-radar" width="230" height="230" class="mx-auto"></canvas>
                 </div>
-                <div style="display: table-cell; width: 55%; vertical-align: top;" id="pdf-ocean-scores" class="text-xs space-y-2 font-mono Brutal-list pl-4"></div>
+                <div style="display: table-cell; width: 55%; vertical-align: top; padding-left: 20px;" id="pdf-ocean-scores" class="text-xs space-y-2 font-mono brutal-list"></div>
             </div>
 
-            <h2 class="text-lg font-bold mt-6 mb-2 border-b-2 border-gray-600 pb-1 text-gray-700">3. DESKRIPSI & ANALISIS KECENDERUNGAN</h2>
+            <!-- BAGIAN 3: ANALISIS KECENDERUNGAN OCEAN -->
+            <h2 class="text-lg font-bold mt-6 mb-2 border-b-2 border-gray-600 pb-1 text-gray-700">3. DESKRIPSI & ANALISIS KECENDERUNGAN OCEAN</h2>
             <div id="pdf-deskripsi-analisis" class="text-xs text-gray-700 space-y-3 bg-gray-50 p-4 rounded-lg border border-gray-200 leading-relaxed"></div>
         </div>
     </div>
@@ -240,23 +248,100 @@
         async function finishTest(e) {
             if(e) e.preventDefault();
             clearInterval(countdown);
-            document.getElementById('timer-box').add ? "" : document.getElementById('timer-box').classList.add('hidden');
+            document.getElementById('timer-box').classList.add('hidden');
             document.getElementById('step-ocean').classList.add('hidden');
             document.getElementById('step-finish').classList.remove('hidden');
 
+            // 1. Hitung Nilai Mentah DISC
             let scoreM = { D: 0, I: 0, S: 0, C: 0 }, scoreL = { D: 0, I: 0, S: 0, C: 0 }, scoreC = { D: 0, I: 0, S: 0, C: 0 };
             discQuestions.forEach(q => {
                 const m = document.querySelector(`input[name="disc_m_${q.id}"]:checked`);
                 const l = document.querySelector(`input[name="disc_l_${q.id}"]:checked`);
-                if(m) scoreM[m.value]++; if(l) scoreL[l.value]++;
+                if(m) scoreM[m.value]++; 
+                if(l) scoreL[l.value]++;
             });
             ['D','I','S','C'].forEach(t => scoreC[t] = scoreM[t] - scoreL[t]);
 
-            const optDisc = { responsive: false, scales: { y: { min: 0, max: 24 } }, plugins: { legend: { display: false } } };
-            new Chart(document.getElementById('chart-most'), { type: 'line', data: { labels: ['D', 'I', 'S', 'C'], datasets: [{ data: [scoreM.D, scoreM.I, scoreM.S, scoreM.C], borderColor: '#16a34a', borderWidth: 3 }] }, options: optDisc });
-            new Chart(document.getElementById('chart-least'), { type: 'line', data: { labels: ['D', 'I', 'S', 'C'], datasets: [{ data: [scoreL.D, scoreL.I, scoreL.S, scoreL.C], borderColor: '#dc2626', borderWidth: 3 }] }, options: optDisc });
-            new Chart(document.getElementById('chart-change'), { type: 'line', data: { labels: ['D', 'I', 'S', 'C'], datasets: [{ data: [scoreC.D, scoreC.I, scoreC.S, scoreC.C], borderColor: '#2563eb', borderWidth: 3 }] }, options: { ...optDisc, scales: { y: { min: -24, max: 24 } } } });
+            document.getElementById('score-val-d').innerText = `${scoreC.D} (M:${scoreM.D}, L:${scoreL.D})`;
+            document.getElementById('score-val-i').innerText = `${scoreC.I} (M:${scoreM.I}, L:${scoreL.I})`;
+            document.getElementById('score-val-s').innerText = `${scoreC.S} (M:${scoreM.S}, L:${scoreL.S})`;
+            document.getElementById('score-val-c').innerText = `${scoreC.C} (M:${scoreM.C}, L:${scoreL.C})`;
 
+            // Map total nilai ke 8 Segmen Lingkaran Kompas Perilaku Gambar
+            let v_veryAssertive = Math.max(0, scoreC.D);
+            let v_assertivePersuasive = Math.max(0, Math.floor((scoreC.D + scoreC.I) / 2));
+            let v_veryPersuasive = Math.max(0, scoreC.I);
+            let v_supportivePersuasive = Math.max(0, Math.floor((scoreC.I + scoreC.S) / 2));
+            let v_verySupportive = Math.max(0, scoreC.S);
+            let v_supportiveAnalytical = Math.max(0, Math.floor((scoreC.S + scoreC.C) / 2));
+            let v_veryAnalytical = Math.max(0, scoreC.C);
+            let v_analyticalAssertive = Math.max(0, Math.floor((scoreC.C + scoreC.D) / 2));
+
+            let circumplexData = [
+                v_veryAssertive, v_assertivePersuasive, v_veryPersuasive, v_supportivePersuasive,
+                v_verySupportive, v_supportiveAnalytical, v_veryAnalytical, v_analyticalAssertive
+            ];
+
+            const circumplexLabels = [
+                'Very Assertive (D)', 'Assertive & Persuasive', 'Very Persuasive (I)', 'Supportive & Persuasive',
+                'Very Supportive (S)', 'Supportive & Analytical', 'Very Analytical (C)', 'Analytical & Assertive'
+            ];
+
+            // Cari index tertinggi untuk menentukan tipe primer
+            let maxIdx = circumplexData.indexOf(Math.max(...circumplexData));
+            document.getElementById('disc-primary-style').innerText = circumplexLabels[maxIdx];
+
+            // Generate Teks Kesimpulan DISC secara dinamis sesuai gambar terlampir
+            let kesimpulanHtml = "";
+            if (maxIdx === 0 || maxIdx === 7) { // Dominan / D Area
+                kesimpulanHtml = `
+                    <p>• <strong>Kesesuaian Pekerjaan (Job Fit):</strong> Sangat cocok bekerja sebagai pemimpin atau eksekutor lapangan yang berani mengambil risiko, berorientasi hasil, mandiri, serta sigap mengambil keputusan cepat saat krisis.</p>
+                    <p>• <strong>Gaya Komunikasi & Resolusi Konflik:</strong> Lugas, tegas, dan langsung pada inti masalah (to the point). Ketika di bawah tekanan tinggi, cenderung bersikap asertif, kompetitif, dan menuntut lingkungan bergerak cepat.</p>
+                    <p>• <strong>Kekuatan & Area Pengembangan:</strong> Memiliki dorongan internal yang kuat untuk memimpin. Namun, area pengembangan krusial yang perlu dilatih adalah meningkatkan kesabaran mendengarkan masukan tim dan meredam ego agresif.</p>
+                `;
+            } else if (maxIdx === 1 || maxIdx === 2 || maxIdx === 3) { // Influence / I Area
+                kesimpulanHtml = `
+                    <p>• <strong>Kesesuaian Pekerjaan (Job Fit):</strong> Sangat optimal di posisi yang membutuhkan kemampuan negosiasi, hubungan masyarakat (PR), pembicara publik, kolaborator tim, atau divisi kreatif yang dinamis.</p>
+                    <p>• <strong>Gaya Komunikasi & Resolusi Konflik:</strong> Sangat persuasif, antusias, terbuka, dan ekspresif. Menyelesaikan konflik dengan pendekatan interpersonal yang cair dan mengedepankan optimisme.</p>
+                    <p>• <strong>Kekuatan & Area Pengembangan:</strong> Hebat dalam membangun kehangatan serta komunikasi massa. Namun, perlu dibimbing dalam ketelitian administratif, fokus pada detail data kerja, serta pengelolaan manajemen waktu agar tidak impulsif.</p>
+                `;
+            } else if (maxIdx === 4 || maxIdx === 5) { // Steadiness / S Area
+                kesimpulanHtml = `
+                    <p>• <strong>Kesesuaian Pekerjaan (Job Fit):</strong> Sangat andal pada operasional yang stabil, manajemen pelayanan (customer service), atau posisi yang memerlukan konsistensi serta kerja sama tim jangka panjang.</p>
+                    <p>• <strong>Gaya Komunikasi & Resolusi Konflik:</strong> Menjadi pendengar yang baik, penuh empati, dan sopan. Cenderung mengalah atau pasif demi menjaga kedamaian tim dan menghindari konfrontasi langsung.</p>
+                    <p>• <strong>Kekuatan & Area Pengembangan:</strong> Memiliki tingkat loyalitas dan kesabaran tinggi. Area pengembangan utamanya adalah harus belajar berani mengambil keputusan secara mandiri dan tegas tanpa rasa ragu.</p>
+                `;
+            } else { // Conscientiousness / C Area
+                kesimpulanHtml = `
+                    <p>• <strong>Kesesuaian Pekerjaan (Job Fit):</strong> Sangat presisi diposisikan sebagai staf administratif, analis data, pengendali mutu (QA), keuangan, atau fungsi riset teknis yang membutuhkan akurasi tinggi.</p>
+                    <p>• <strong>Gaya Komunikasi & Resolusi Konflik:</strong> Menggunakan argumen berbasis data, fakta objektif, dan logika baku. Menghadapi konflik dengan mengacu kembali pada standar operasional atau aturan tertulis.</p>
+                    <p>• <strong>Kekuatan & Area Pengembangan:</strong> Sangat detail, terstruktur, dan objektif. Namun, perlu mengantisipasi sifat terlalu perfeksionis yang berisiko memperlambat eksekusi, serta perlu melatih toleransi fleksibilitas kerja.</p>
+                `;
+            }
+            document.getElementById('pdf-disc-kesimpulan').innerHTML = kesimpulanHtml;
+
+            // Render Radar Chart DISC 8 Sisi
+            new Chart(document.getElementById('chart-disc-circumplex'), {
+                type: 'radar',
+                data: {
+                    labels: circumplexLabels,
+                    datasets: [{
+                        label: 'Kompas Perilaku DISC',
+                        data: circumplexData,
+                        backgroundColor: 'rgba(37, 99, 235, 0.2)',
+                        borderColor: '#2563eb',
+                        borderWidth: 2,
+                        pointBackgroundColor: '#1d4ed8'
+                    }]
+                },
+                options: {
+                    responsive: false,
+                    scales: { r: { min: 0, ticks: { stepSize: 4 } } },
+                    plugins: { legend: { display: false } }
+                }
+            });
+
+            // 2. Hitung Nilai Mentah OCEAN
             let oceanScores = { O: 0, C: 0, E: 0, A: 0, N: 0 }, oceanCounts = { O: 0, C: 0, E: 0, A: 0, N: 0 };
             oceanQuestions.forEach(q => {
                 const checked = document.querySelector(`input[name="ocean_${q.id}"]:checked`);
@@ -274,7 +359,6 @@
                 data: {
                     labels: ['Openness', 'Conscientiousness', 'Extraversion', 'Agreeableness', 'Neuroticism'],
                     datasets: [{
-                        label: 'Skor Karakter',
                         data: [avgO, avgC, avgE, avgA, avgN],
                         backgroundColor: 'rgba(34, 197, 94, 0.2)',
                         borderColor: '#22c55e',
