@@ -4,9 +4,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Online Assessment Platform - 1000 Days Fund</title>
+    <!-- Tailwind CSS -->
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <!-- html2pdf.js -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <!-- EmailJS -->
     <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
+    <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
         emailjs.init("USER_PUBLIC_KEY_ANDA");
@@ -18,20 +22,22 @@
 <body class="bg-gray-100 text-gray-800 font-sans antialiased">
 
     <div class="max-w-4xl mx-auto my-10 p-6 bg-white rounded-xl shadow-lg">
+        <!-- Header Utama -->
         <div class="border-b pb-4 mb-6 text-center">
             <h1 class="text-3xl font-extrabold text-blue-600">Online Assessment Platform</h1>
-            <p class="text-sm text-gray-500 mt-1">DISC (24 Soal MOST/LEAST) & Big Five Personality (50 Soal OCEAN)</p>
+            <p class="text-sm text-gray-500 mt-1">DISC Personality (24 Soal) & Big Five Personality (50 Soal)</p>
         </div>
 
+        <!-- Timer Box -->
         <div id="timer-box" class="hidden bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg mb-6 flex justify-between items-center shadow-sm">
             <span class="font-bold flex items-center gap-2">
                 <span class="animate-ping inline-flex h-2 w-2 rounded-full bg-red-400"></span>
-                <span id="test-title">Nama Tes</span>
+                <span id="test-title">Nama Pengisian Tes</span>
             </span>
             <span class="text-2xl font-mono font-bold tracking-wider" id="timer">00:00</span>
         </div>
 
-        <!-- STEP 1: Registrasi -->
+        <!-- STEP 1: Form Registrasi Identitas Karyawan -->
         <div id="step-registration" class="block">
             <h2 class="text-xl font-bold mb-4 text-gray-700 border-l-4 border-blue-600 pl-2">Data Diri Kandidat</h2>
             <form id="form-kandidat" onsubmit="startDiscTest(event)">
@@ -44,40 +50,41 @@
                     <input type="tel" id="nohp" required class="w-full border border-gray-300 p-2.5 rounded-lg focus:ring-2 focus:ring-blue-400 outline-none transition" placeholder="08xxxxxxxxxx">
                 </div>
                 <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-lg shadow-md transition-all">
-                    Mulai Rangkaian Tes
+                    Mulai Rangkaian Tes Assessment
                 </button>
             </form>
         </div>
 
-        <!-- STEP 2: DISC -->
+        <!-- STEP 2: Tampilan Kertas Soal DISC -->
         <div id="step-disc" class="hidden">
             <div class="mb-6 bg-blue-50 p-4 rounded-lg border border-blue-100">
-                <h2 class="text-xl font-bold text-blue-900">Bagian 1: Tes Kepribadian DISC</h2>
-                <p class="text-sm text-gray-700 mt-2">Pilih 1 pernyataan <strong>MOST (M)</strong> dan 1 pernyataan <strong>LEAST (L)</strong> pada pilihan yang berbeda di tiap nomor.</p>
+                <h2 class="text-xl font-bold text-blue-900">Bagian 1: Tes Kepribadian DISC (24 Soal)</h2>
+                <p class="text-sm text-gray-700 mt-2">Pilih 1 pernyataan <strong>MOST (M)</strong> untuk yang paling mewakili diri Anda, dan 1 pernyataan <strong>LEAST (L)</strong> untuk sifat yang paling tidak cocok.</p>
+                <p class="text-xs text-red-500 font-bold mt-1">*Catatan: Nilai MOST dan LEAST tidak diperkenankan dipilih pada baris kalimat yang sama.</p>
             </div>
             <form id="form-disc" onsubmit="validateAndSubmitDisc(event)">
                 <div id="disc-container" class="space-y-6 mb-6"></div>
                 <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-lg shadow-md transition-all">
-                    Lanjut ke Tes Big Five (OCEAN)
+                    Simpan & Lanjut ke Tes Big Five (OCEAN)
                 </button>
             </form>
         </div>
 
-        <!-- STEP 3: OCEAN (50 Soal) -->
+        <!-- STEP 3: Tampilan Kertas Soal Big Five OCEAN (50 Soal) -->
         <div id="step-ocean" class="hidden">
             <div class="mb-4 bg-green-50 p-4 rounded-lg border border-green-100">
                 <h2 class="text-xl font-bold text-green-900 border-l-4 border-green-600 pl-2">Bagian 2: Tes Big Five Personality (50 Soal)</h2>
-                <p class="text-sm text-gray-700 mt-1">Berikan penilaian dari skala 1 (Sangat Tidak Setuju) hingga 5 (Sangat Setuju).</p>
+                <p class="text-sm text-gray-700 mt-1">Berikan penilaian kecocokan tindakan Anda dari skala angka 1 (Sangat Tidak Setuju) sampai 5 (Sangat Setuju).</p>
             </div>
             <form id="form-ocean" onsubmit="finishTest(event)">
                 <div id="ocean-container" class="space-y-4 mb-6"></div>
                 <button type="submit" class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 rounded-lg shadow-md transition-all">
-                    Selesai & Kirim Hasil Assessment
+                    Selesai & Kirim Laporan Hasil Ke HR
                 </button>
             </form>
         </div>
 
-        <!-- STEP 4: Selesai -->
+        <!-- STEP 4: Pengiriman Data Akhir -->
         <div id="step-finish" class="hidden text-center py-10">
             <div id="loading-status">
                 <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
@@ -90,7 +97,7 @@
             </div>
         </div>
 
-        <!-- TEMPLATE PDF (A4 PRINT) -->
+        <!-- TEMPLATE PDF PRINT A4 (HIDDEN) -->
         <div id="pdf-template" class="hidden p-10 bg-white text-gray-900" style="width: 210mm;">
             <div class="text-center border-b-4 border-gray-800 pb-4 mb-6">
                 <h1 class="text-2xl font-extrabold tracking-tight">REPORT ONLINE PSYCHOLOGICAL ASSESSMENT</h1>
@@ -120,11 +127,11 @@
             </div>
 
             <h2 class="text-lg font-bold mt-8 mb-3 border-b-2 border-green-600 pb-1 text-green-700">2. HASIL RADAR CHART BIG FIVE PERSONALITY (OCEAN)</h2>
-            <div class="flex items-center gap-6 my-4" style="display: table; width: 100%;">
+            <div class="my-4" style="display: table; width: 100%;">
                 <div style="display: table-cell; width: 45%; vertical-align: middle; text-align: center;">
                     <canvas id="chart-ocean-radar" width="230" height="230" class="mx-auto"></canvas>
                 </div>
-                <div style="display: table-cell; width: 55%; vertical-align: top;" id="pdf-ocean-scores" class="text-xs space-y-2 font-mono pl-4"></div>
+                <div style="display: table-cell; width: 55%; vertical-align: top;" id="pdf-ocean-scores" class="text-xs space-y-2 font-mono Brutal-list pl-4"></div>
             </div>
 
             <h2 class="text-lg font-bold mt-6 mb-2 border-b-2 border-gray-600 pb-1 text-gray-700">3. DESKRIPSI & ANALISIS KECENDERUNGAN</h2>
@@ -138,7 +145,7 @@
         let countdown;
         let waktuSisa = 0;
         const WAKTU_DISC = 1500; 
-        const WAKTU_OCEAN = 1800; // 30 Menit untuk 50 Soal
+        const WAKTU_OCEAN = 1800; 
 
         function startTimer(durasi, judul, callbackSelesai) {
             clearInterval(countdown);
@@ -163,6 +170,7 @@
 
             const container = document.getElementById('disc-container');
             container.innerHTML = ''; 
+            
             discQuestions.forEach((q, idx) => {
                 let rowsHtml = q.options.map((opt) => `
                     <tr class="hover:bg-gray-50">
@@ -171,6 +179,7 @@
                         <td class="p-3"><input type="radio" name="disc_l_${q.id}" value="${opt.least}" required class="w-5 h-5 text-red-600 cursor-pointer"></td>
                     </tr>
                 `).join('');
+                
                 container.innerHTML += `
                     <div class="p-5 border border-gray-200 rounded-xl bg-white shadow-sm">
                         <span class="font-bold text-blue-600 text-sm block mb-2">Pernyataan Soal #${idx + 1}</span>
@@ -181,7 +190,7 @@
                     </div>
                 `;
             });
-            startTimer(WAKTU_DISC, "Bagian 1: Tes DISC", () => { validateAndSubmitDisc(); });
+            startTimer(WAKTU_DISC, "Bagian 1: Tes DISC (24 Soal)", () => { validateAndSubmitDisc(); });
         }
 
         function validateAndSubmitDisc(e) {
@@ -190,7 +199,7 @@
                 const checkedM = document.querySelector(`input[name="disc_m_${q.id}"]:checked`);
                 const checkedL = document.querySelector(`input[name="disc_l_${q.id}"]:checked`);
                 if(checkedM && checkedL && checkedM.closest('tr').rowIndex === checkedL.closest('tr').rowIndex) {
-                    alert(`Validasi Gagal di Soal Nomor ${q.id}: Pilihan MOST dan LEAST tidak boleh di baris yang sama.`);
+                    alert(`Validasi Gagal di Soal Nomor ${q.id}: Pilihan MOST dan LEAST tidak boleh di baris kalimat yang sama.`);
                     checkedM.closest('div').scrollIntoView({ behavior: 'smooth', block: 'center' });
                     return false;
                 }
@@ -224,17 +233,17 @@
                     </div>
                 `;
             });
-            startTimer(WAKTU_OCEAN, "Bagian 2: Tes Big Five (OCEAN)", () => { document.getElementById('form-ocean').requestSubmit(); });
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+            startTimer(WAKTU_OCEAN, "Bagian 2: Tes Big Five (50 Soal)", () => { document.getElementById('form-ocean').requestSubmit(); });
         }
 
         async function finishTest(e) {
             if(e) e.preventDefault();
             clearInterval(countdown);
-            document.getElementById('timer-box').classList.add('hidden');
+            document.getElementById('timer-box').add ? "" : document.getElementById('timer-box').classList.add('hidden');
             document.getElementById('step-ocean').classList.add('hidden');
             document.getElementById('step-finish').classList.remove('hidden');
 
-            // 1. Hitung DISC
             let scoreM = { D: 0, I: 0, S: 0, C: 0 }, scoreL = { D: 0, I: 0, S: 0, C: 0 }, scoreC = { D: 0, I: 0, S: 0, C: 0 };
             discQuestions.forEach(q => {
                 const m = document.querySelector(`input[name="disc_m_${q.id}"]:checked`);
@@ -243,13 +252,11 @@
             });
             ['D','I','S','C'].forEach(t => scoreC[t] = scoreM[t] - scoreL[t]);
 
-            // 2. Plotting Grafik DISC
             const optDisc = { responsive: false, scales: { y: { min: 0, max: 24 } }, plugins: { legend: { display: false } } };
             new Chart(document.getElementById('chart-most'), { type: 'line', data: { labels: ['D', 'I', 'S', 'C'], datasets: [{ data: [scoreM.D, scoreM.I, scoreM.S, scoreM.C], borderColor: '#16a34a', borderWidth: 3 }] }, options: optDisc });
             new Chart(document.getElementById('chart-least'), { type: 'line', data: { labels: ['D', 'I', 'S', 'C'], datasets: [{ data: [scoreL.D, scoreL.I, scoreL.S, scoreL.C], borderColor: '#dc2626', borderWidth: 3 }] }, options: optDisc });
             new Chart(document.getElementById('chart-change'), { type: 'line', data: { labels: ['D', 'I', 'S', 'C'], datasets: [{ data: [scoreC.D, scoreC.I, scoreC.S, scoreC.C], borderColor: '#2563eb', borderWidth: 3 }] }, options: { ...optDisc, scales: { y: { min: -24, max: 24 } } } });
 
-            // 3. Hitung OCEAN (Rata-rata Akurat)
             let oceanScores = { O: 0, C: 0, E: 0, A: 0, N: 0 }, oceanCounts = { O: 0, C: 0, E: 0, A: 0, N: 0 };
             oceanQuestions.forEach(q => {
                 const checked = document.querySelector(`input[name="ocean_${q.id}"]:checked`);
@@ -262,7 +269,6 @@
             let avgA = (oceanScores.A / oceanCounts.A).toFixed(2);
             let avgN = (oceanScores.N / oceanCounts.N).toFixed(2);
 
-            // 4. Buat RADAR CHART untuk OCEAN
             new Chart(document.getElementById('chart-ocean-radar'), {
                 type: 'radar',
                 data: {
@@ -279,12 +285,10 @@
                 options: { responsive: false, scales: { r: { min: 1, max: 5, ticks: { stepSize: 1 } } }, plugins: { legend: { display: false } } }
             });
 
-            // Tampilkan Data Identitas ke PDF
             document.getElementById('pdf-nama').innerText = kandidatData.nama;
             document.getElementById('pdf-nohp').innerText = kandidatData.nohp;
             document.getElementById('pdf-tanggal').innerText = new Date().toLocaleDateString('id-ID', { dateStyle: 'full' });
 
-            // Cetak Hasil Nilai Rata-rata yang Diperbaiki
             document.getElementById('pdf-ocean-scores').innerHTML = `
                 <p class="border-b pb-1"><strong>• Openness (O):</strong> <span class="text-green-600 font-bold">${avgO}</span> / 5.00</p>
                 <p class="border-b pb-1"><strong>• Conscientiousness (C):</strong> <span class="text-green-600 font-bold">${avgC}</span> / 5.00</p>
@@ -293,7 +297,6 @@
                 <p class="border-b pb-1"><strong>• Neuroticism (N):</strong> <span class="text-red-500 font-bold">${avgN}</span> / 5.00</p>
             `;
 
-            // 5. Analisis Narasi Deskriptif Otomatis
             let analisisHtml = '';
             analisisHtml += `<p>• <strong>Kecenderungan Openness (${avgO} / 5.00):</strong> ${avgO >= 3.5 ? 'Kandidat memiliki keterbukaan pikiran yang tinggi, sangat kreatif, inovatif, dan adaptif terhadap perubahan serta ide-ide baru.' : 'Kandidat lebih nyaman bekerja dengan metode yang pasti, konvensional, serta praktis.'}</p>`;
             analisisHtml += `<p>• <strong>Kecenderungan Conscientiousness (${avgC} / 5.00):</strong> ${avgC >= 3.5 ? 'Menunjukkan tingkat kedisiplinan yang tinggi, terorganisir, teliti, terstruktur, serta berorientasi penuh pada pencapaian target kerja.' : 'Kandidat cenderung fleksibel namun membutuhkan pengawasan ekstra agar pengerjaan tugas tetap teratur.'}</p>`;
@@ -302,7 +305,6 @@
             analisisHtml += `<p>• <strong>Kecenderungan Neuroticism (${avgN} / 5.00):</strong> ${avgN >= 3.5 ? 'Kandidat rentan terhadap tekanan kerja (stres) dan membutuhkan regulasi emosi ekstra saat krisis.' : 'Kandidat memiliki stabilitas emosi yang matang, tenang di bawah tekanan kerja, dan tidak mudah cemas.'}</p>`;
             document.getElementById('pdf-deskripsi-analisis').innerHTML = analisisHtml;
 
-            // Render PDF & Kirim via EmailJS
             const element = document.getElementById('pdf-template');
             element.classList.remove('hidden');
             const pdfOptions = { margin: 10, filename: `Hasil_Assessment_${kandidatData.nama.replace(/ /g, '_')}.pdf`, html2canvas: { scale: 2, useCORS: true }, jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' } };
@@ -314,12 +316,12 @@
                 const templateParams = { to_email: 'hr@1000daysfund.org', kandidat_nama: kandidatData.nama, kandidat_nohp: kandidatData.nohp, pdf_attachment: pdfBase64 };
                 // await emailjs.send('YOUR_SERVICE_ID', 'YOUR_TEMPLATE_ID', templateParams);
                 
-                await new Promise(res => setTimeout(res, 3000));
+                await new Promise(res => setTimeout(res, 2000));
                 document.getElementById('loading-status').classList.add('hidden');
                 document.getElementById('success-status').classList.remove('hidden');
             } catch (err) {
                 console.error(err);
-                alert("Gagal memproses pembuatan dokumen.");
+                alert("Gagal memproses pembuatan laporan.");
             }
         }
     </script>
