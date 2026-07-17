@@ -3,34 +3,33 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Aplikasi Rekrutmen - Tes Kepribadian</title>
-    <!-- Tailwind CSS Versi Stabil -->
+    <title>Online Assessment Platform - 1000 Days Fund</title>
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
-    <!-- html2pdf.js untuk Convert ke PDF -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
-    <!-- EmailJS untuk Kirim Email Otomatis -->
     <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
+    <!-- Tambahan Library Grafik Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
-        // Inisialisasi EmailJS (Ganti dengan Public Key Anda nanti)
         emailjs.init("USER_PUBLIC_KEY_ANDA");
     </script>
+    <style>
+        .table-disc th, .table-disc td { border: 1px solid #e2e8f0; padding: 6px 12px; text-align: center; }
+    </style>
 </head>
 <body class="bg-gray-50 text-gray-800 font-sans">
 
-    <div class="max-w-3xl mx-auto my-10 p-6 bg-white rounded-lg shadow-md">
-        <!-- Header Aplikasi -->
+    <div class="max-w-4xl mx-auto my-10 p-6 bg-white rounded-lg shadow-md">
         <div class="border-b pb-4 mb-6 text-center">
             <h1 class="text-2xl font-bold text-blue-600">Online Assessment Platform</h1>
-            <p class="text-sm text-gray-500">DISC & Big Five Personality (OCEAN) Test</p>
+            <p class="text-sm text-gray-500">DISC (24 Soal MOST/LEAST) & Big Five Personality</p>
         </div>
 
-        <!-- Info Batasan Waktu (Akan muncul saat tes berjalan) -->
         <div id="timer-box" class="hidden bg-red-50 border border-red-200 text-red-700 px-4 py-2 rounded mb-6 flex justify-between items-center">
             <span class="font-semibold" id="test-title">Nama Tes</span>
             <span class="text-xl font-mono font-bold" id="timer">00:00</span>
         </div>
 
-        <!-- STEP 1: Form Data Diri -->
+        <!-- STEP 1: Registrasi -->
         <div id="step-registration" class="block">
             <h2 class="text-xl font-semibold mb-4">Data Diri Kandidat</h2>
             <form id="form-kandidat" onsubmit="startDiscTest(event)">
@@ -43,26 +42,31 @@
                     <input type="tel" id="nohp" required class="w-full border p-2 rounded focus:ring-2 focus:ring-blue-400 outline-none" placeholder="08xxxxxxxxxx">
                 </div>
                 <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 rounded transition">
-                    Mulai Tes DISC
+                    Mulai Tes DISC (24 Soal)
                 </button>
             </form>
         </div>
 
         <!-- STEP 2: Tes DISC -->
         <div id="step-disc" class="hidden">
-            <div class="mb-4">
-                <h2 class="text-xl font-semibold">Bagian 1: Tes DISC</h2>
-                <p class="text-sm text-gray-500 mt-1">Pilihlah satu pernyataan yang paling menggambarkan diri Anda pada setiap nomor.</p>
+            <div class="mb-4 bg-blue-50 p-4 rounded border border-blue-100">
+                <h2 class="text-xl font-semibold text-blue-900">Bagian 1: Tes DISC (24 Soal)</h2>
+                <p class="text-sm text-gray-700 mt-1">Pada setiap nomor terdapat 4 pernyataan. Anda <strong>WAJIB</strong> memilih:</p>
+                <ul class="list-disc pl-5 text-xs text-gray-600 mt-1">
+                    <li>Satu pilihan di kolom <strong class="text-green-600">M (MOST)</strong>: Yang paling menggambarkan diri Anda.</li>
+                    <li>Satu pilihan di kolom <strong class="text-red-600">L (LEAST)</strong>: Yang paling tidak menggambarkan diri Anda.</li>
+                    <li><em>Catatan: Dalam satu baris nomor, Anda tidak boleh memilih M dan L pada pernyataan yang sama.</em></li>
+                </ul>
             </div>
-            <form id="form-disc" onsubmit="startOceanTest(event)">
-                <div id="disc-container" class="space-y-6 mb-6"></div>
+            <form id="form-disc" onsubmit="validateAndSubmitDisc(event)">
+                <div id="disc-container" class="space-y-4 mb-6"></div>
                 <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 rounded transition">
                     Lanjut ke Tes Big Five (OCEAN)
                 </button>
             </form>
         </div>
 
-        <!-- STEP 3: Tes Big Five (OCEAN) -->
+        <!-- STEP 3: Tes OCEAN -->
         <div id="step-ocean" class="hidden">
             <div class="mb-4">
                 <h2 class="text-xl font-semibold">Bagian 2: Tes Big Five Personality</h2>
@@ -76,119 +80,139 @@
             </form>
         </div>
 
-        <!-- STEP 4: Halaman Selesai / Loading -->
+        <!-- STEP 4: Selesai -->
         <div id="step-finish" class="hidden text-center py-10">
             <div id="loading-status">
                 <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-                <h2 class="text-xl font-semibold">Sedang memproses dan mengirimkan hasil tes Anda...</h2>
-                <p class="text-gray-500 mt-2">Mohon jangan menutup halaman ini.</p>
+                <h2 class="text-xl font-semibold">Memproses Skor & Menggambar 3 Grafik Profil...</h2>
+                <p class="text-gray-500 mt-2">Mohon tunggu sebentar, file sedang dikirim ke HR.</p>
             </div>
             <div id="success-status" class="hidden">
                 <p class="text-5xl mb-4">🎉</p>
                 <h2 class="text-2xl font-bold text-green-600">Terima Kasih!</h2>
-                <p class="text-gray-600 mt-2">Tes Anda telah selesai. Hasil pengerjaan telah dikirimkan langsung ke tim HR 1000 Days Fund.</p>
+                <p class="text-gray-600 mt-2">Tes Anda sukses dikirimkan langsung ke tim HR 1000 Days Fund via PDF email.</p>
             </div>
         </div>
 
-        <!-- TEMPLATE HASIL (Hidden dari Layar, Hanya untuk diconvert ke PDF) -->
-        <div id="pdf-template" class="hidden p-8 text-gray-900" style="width: 210mm;">
-            <h1 class="text-2xl font-bold border-b pb-2 mb-4">HASIL ASSESSMENT KANDIDAT</h1>
+        <!-- TEMPLATE DOKUMEN HASIL UNTUK PDF (A4) -->
+        <div id="pdf-template" class="hidden p-8 text-gray-900 bg-white" style="width: 210mm;">
+            <h1 class="text-2xl font-bold border-b-2 border-gray-300 pb-2 mb-4 text-center">HASIL REKRUTMEN ONLINE ASSESSMENT</h1>
             <table class="w-full mb-6 text-sm">
                 <tr><td class="w-32 font-bold py-1">Nama Kandidat</td><td class="py-1">: <span id="pdf-nama"></span></td></tr>
                 <tr><td class="font-bold py-1">No. HP</td><td class="py-1">: <span id="pdf-nohp"></span></td></tr>
                 <tr><td class="font-bold py-1">Tanggal Tes</td><td class="py-1">: <span id="pdf-tanggal"></span></td></tr>
             </table>
             
-            <h2 class="text-lg font-bold mt-6 mb-2 border-b">Skor Tes DISC</h2>
-            <p class="mb-2 text-sm">Distribusi kecenderungan karakter tipe kepribadian:</p>
-            <div id="pdf-disc-results" class="text-sm font-mono space-y-1 bg-gray-50 p-3 rounded"></div>
+            <h2 class="text-lg font-bold mt-6 mb-2 border-b text-blue-600">A. 3 GRAFIK HASIL PROFIL DISC</h2>
+            <div class="grid grid-cols-3 gap-4 my-4">
+                <div class="text-center">
+                    <p class="text-xs font-bold text-gray-600 mb-1">Grafik 1: MOST (Mask)</p>
+                    <canvas id="chart-most" style="max-height: 180px;"></canvas>
+                </div>
+                <div class="text-center">
+                    <p class="text-xs font-bold text-gray-600 mb-1">Grafik 2: LEAST (Core)</p>
+                    <canvas id="chart-least" style="max-height: 180px;"></canvas>
+                </div>
+                <div class="text-center">
+                    <p class="text-xs font-bold text-gray-600 mb-1">Grafik 3: CHANGE (Mirror)</p>
+                    <canvas id="chart-change" style="max-height: 180px;"></canvas>
+                </div>
+            </div>
+            <p class="text-xs text-gray-500 mb-6 italic">*Grafik 1 menampilkan persona publik, Grafik 2 respon alami bawah tekanan, Grafik 3 profil gabungan penyesuaian diri.</p>
 
-            <h2 class="text-lg font-bold mt-6 mb-2 border-b">Skor Big Five Personality (OCEAN)</h2>
-            <p class="mb-2 text-sm">Rerata skor untuk setiap dimensi psikologis (Skala 1 - 5):</p>
+            <h2 class="text-lg font-bold mt-6 mb-2 border-b text-blue-600">B. SKOR BIG FIVE PERSONALITY (OCEAN)</h2>
             <div id="pdf-ocean-results" class="text-sm font-mono space-y-1 bg-gray-50 p-3 rounded"></div>
         </div>
 
     </div>
 
-    <!-- Hubungkan data soal -->
     <script src="questions.js"></script>
     <script>
-        // State data kandidat & timer
         let kandidatData = {};
         let countdown;
         let waktuSisa = 0;
-
-        // Atur Batasan Waktu Di Sini (dalam satuan Detik)
-        const WAKTU_DISC = 600;  // Contoh: 10 Menit
-        const WAKTU_OCEAN = 600; // Contoh: 10 Menit
+        const WAKTU_DISC = 1200; // 20 Menit untuk 24 Soal
+        const WAKTU_OCEAN = 600;
 
         function startTimer(durasi, judul, callbackSelesai) {
             clearInterval(countdown);
             document.getElementById('timer-box').classList.remove('hidden');
             document.getElementById('test-title').innerText = judul;
             waktuSisa = durasi;
-
             countdown = setInterval(() => {
                 let menit = Math.floor(waktuSisa / 60);
                 let detik = waktuSisa % 60;
-                
-                document.getElementById('timer').innerText = 
-                    `${menit.toString().padStart(2, '0')}:${detik.toString().padStart(2, '0')}`;
-
+                document.getElementById('timer').innerText = `${menit.toString().padStart(2,'0')}:${detik.toString().padStart(2,'0')}`;
                 if (waktuSisa <= 0) {
                     clearInterval(countdown);
-                    alert(`Waktu untuk ${judul} telah habis! Sistem akan melanjutkan otomatis.`);
                     callbackSelesai();
                 }
                 waktuSisa--;
             }, 1000);
         }
 
-        // Jalankan Tes DISC
         function startDiscTest(e) {
             e.preventDefault();
             kandidatData.nama = document.getElementById('nama').value;
             kandidatData.nohp = document.getElementById('nohp').value;
-
             document.getElementById('step-registration').classList.add('hidden');
             document.getElementById('step-disc').classList.remove('hidden');
 
-            // Render Soal DISC
             const container = document.getElementById('disc-container');
             discQuestions.forEach((q, idx) => {
-                let optionsHtml = q.options.map((opt, oIdx) => `
-                    <label class="flex items-start p-3 border rounded hover:bg-gray-50 cursor-pointer text-sm mb-2">
-                        <input type="radio" name="disc_${q.id}" value="${opt.type}" required class="mt-1 mr-3">
-                        <span>${opt.text}</span>
-                    </label>
+                let rowsHtml = q.options.map((opt, oIdx) => `
+                    <tr class="border-b hover:bg-gray-50">
+                        <td class="p-2"><input type="radio" name="disc_m_${q.id}" value="${opt.most}" required class="h-4 w-4 text-green-600"></td>
+                        <td class="p-2 text-left text-xs md:text-sm text-gray-700">${opt.text}</td>
+                        <td class="p-2"><input type="radio" name="disc_l_${q.id}" value="${opt.least}" required class="h-4 w-4 text-red-600"></td>
+                    </tr>
                 `).join('');
 
                 container.innerHTML += `
-                    <div class="p-4 border border-gray-200 rounded-lg bg-gray-50/50">
-                        <span class="font-bold text-blue-600 block mb-2">Pertanyaan ${idx + 1}</span>
-                        ${optionsHtml}
+                    <div class="p-4 border rounded-lg bg-white shadow-sm border-gray-200">
+                        <span class="font-bold text-blue-600 text-sm block mb-2">Soal Nomor ${idx + 1}</span>
+                        <table class="w-full text-center table-disc text-xs">
+                            <thead>
+                                <tr class="bg-gray-100">
+                                    <th class="w-12 text-green-700 p-1">MOST (M)</th>
+                                    <th class="text-left p-1 text-gray-600">Gambaran Pernyataan</th>
+                                    <th class="w-12 text-red-700 p-1">LEAST (L)</th>
+                                </tr>
+                            </thead>
+                            <tbody>${rowsHtml}</tbody>
+                        </table>
                     </div>
                 `;
             });
-
-            startTimer(WAKTU_DISC, "Tes DISC", () => {
-                document.getElementById('form-disc').requestSubmit();
-            });
+            startTimer(WAKTU_DISC, "Tes DISC (24 Soal)", () => { validateAndSubmitDisc(); });
         }
 
-        // Jalankan Tes OCEAN
-        function startOceanTest(e) {
+        function validateAndSubmitDisc(e) {
             if(e) e.preventDefault();
-            clearInterval(countdown);
+            // Validasi baris agar MOST & LEAST tidak memilih baris pernyataan yang sama dalam satu nomor
+            for(let q of discQuestions) {
+                const checkedM = document.querySelector(`input[name="disc_m_${q.id}"]:checked`);
+                const checkedL = document.querySelector(`input[name="disc_l_${q.id}"]:checked`);
+                if(checkedM && checkedL) {
+                    if(checkedM.parentElement.parentElement.rowIndex === checkedL.parentElement.parentElement.rowIndex) {
+                        alert(`Validasi Gagal: Pada Soal Nomor ${q.id}, Pilihan MOST dan LEAST tidak boleh berada di baris pernyataan yang sama.`);
+                        return false;
+                    }
+                }
+            }
+            startOceanTest();
+        }
 
+        function startOceanTest() {
+            clearInterval(countdown);
             document.getElementById('step-disc').classList.add('hidden');
             document.getElementById('step-ocean').classList.remove('hidden');
 
-            // Render Soal OCEAN
             const container = document.getElementById('ocean-container');
+            container.innerHTML = '';
             oceanQuestions.forEach((q, idx) => {
                 container.innerHTML += `
-                    <div class="p-4 border border-gray-200 rounded-lg bg-gray-50/50">
+                    <div class="p-4 border border-gray-200 rounded-lg bg-white shadow-sm">
                         <p class="font-medium text-sm mb-3"><span class="font-bold text-gray-500">${idx + 1}.</span> ${q.text}</p>
                         <div class="flex justify-between items-center max-w-md mx-auto text-xs font-semibold text-gray-500">
                             <span>Sangat Tidak Setuju</span>
@@ -205,13 +229,9 @@
                     </div>
                 `;
             });
-
-            startTimer(WAKTU_OCEAN, "Tes Big Five (OCEAN)", () => {
-                document.getElementById('form-ocean').requestSubmit();
-            });
+            startTimer(WAKTU_OCEAN, "Tes Big Five (OCEAN)", () => { finishTest(); });
         }
 
-        // Selesai & Kalkulasi Hasil
         async function finishTest(e) {
             if(e) e.preventDefault();
             clearInterval(countdown);
@@ -219,84 +239,89 @@
             document.getElementById('step-ocean').classList.add('hidden');
             document.getElementById('step-finish').classList.remove('hidden');
 
-            // 1. Hitung Skor DISC
-            let discScores = { D: 0, I: 0, S: 0, C: 0 };
-            const formDataDisc = new FormData(document.getElementById('form-disc'));
-            for (let [key, value] of formDataDisc.entries()) {
-                if(discScores[value] !== undefined) discScores[value]++;
-            }
+            // 1. Kalkulasi Hitung Skor DISC (MOST / LEAST)
+            let mostScores = { D: 0, I: 0, S: 0, C: 0 };
+            let leastScores = { D: 0, I: 0, S: 0, C: 0 };
+            let changeScores = { D: 0, I: 0, S: 0, C: 0 };
 
-            // 2. Hitung Skor OCEAN
-            let oceanScores = { O: 0, C: 0, E: 0, A: 0, N: 0 };
-            let oceanCounts = { O: 0, C: 0, E: 0, A: 0, N: 0 };
-            
-            oceanQuestions.forEach(q => {
-                const checked = document.querySelector(`input[name="ocean_${q.id}"]:checked`);
-                if(checked) {
-                    oceanScores[q.trait] += parseInt(checked.value);
-                    oceanCounts[q.trait]++;
-                }
+            discQuestions.forEach(q => {
+                const m = document.querySelector(`input[name="disc_m_${q.id}"]:checked`);
+                const l = document.querySelector(`input[name="disc_l_${q.id}"]:checked`);
+                if(m && mostScores[m.value] !== undefined) mostScores[m.value]++;
+                if(l && leastScores[l.value] !== undefined) leastScores[l.value]++;
             });
 
-            // Isikan data ke template PDF
+            // Grafik 3 (Change) = Most dikurangi Least
+            ['D','I','S','C'].forEach(t => {
+                changeScores[t] = mostScores[t] - leastScores[t];
+            });
+
+            // 2. Render 3 Grafik Ke Canvas dengan Chart.js
+            new Chart(document.getElementById('chart-most'), {
+                type: 'line',
+                data: { labels: ['D', 'I', 'S', 'C'], datasets: [{ label: 'Skor M', data: [mostScores.D, mostScores.I, mostScores.S, mostScores.C], borderColor: '#16a34a', tension: 0.1, fill: false }] }
+            });
+            new Chart(document.getElementById('chart-least'), {
+                type: 'line',
+                data: { labels: ['D', 'I', 'S', 'C'], datasets: [{ label: 'Skor L', data: [leastScores.D, leastScores.I, leastScores.S, leastScores.C], borderColor: '#dc2626', tension: 0.1, fill: false }] }
+            });
+            new Chart(document.getElementById('chart-change'), {
+                type: 'line',
+                data: { labels: ['D', 'I', 'S', 'C'], datasets: [{ label: 'Skor Change', data: [changeScores.D, changeScores.I, changeScores.S, changeScores.C], borderColor: '#2563eb', tension: 0.1, fill: false }] }
+            });
+
+            // 3. Hitung Skor OCEAN
+            let oceanScores = { O: 0, C: 0, E: 0, A: 0, N: 0 };
+            let oceanCounts = { O: 0, C: 0, E: 0, A: 0, N: 0 };
+            oceanQuestions.forEach(q => {
+                const checked = document.querySelector(`input[name="ocean_${q.id}"]:checked`);
+                if(checked) { oceanScores[q.trait] += parseInt(checked.value); oceanCounts[q.trait]++; }
+            });
+
+            //Isi Konten PDF
             document.getElementById('pdf-nama').innerText = kandidatData.nama;
             document.getElementById('pdf-nohp').innerText = kandidatData.nohp;
             document.getElementById('pdf-tanggal').innerText = new Date().toLocaleDateString('id-ID', { dateStyle: 'full' });
 
-            let discHtml = '';
-            for (let trait in discScores) {
-                discHtml += `<p class="py-1">${trait} (Dominance/Influence/Steadiness/Compliance): **${discScores[trait]} poin**</p>`;
-            }
-            document.getElementById('pdf-disc-results').innerHTML = discHtml;
-
             let oceanHtml = '';
-            for (let trait in oceanScores) {
-                let rataRata = oceanCounts[trait] > 0 ? (oceanScores[trait] / oceanCounts[trait]).toFixed(2) : 0;
-                oceanHtml += `<p class="py-1">${trait} : **${rataRata} / 5.00**</p>`;
+            for (let t in oceanScores) {
+                let avg = oceanCounts[t] > 0 ? (oceanScores[t] / oceanCounts[t]).toFixed(2) : 0;
+                oceanHtml += `<p class="py-1">${t} (Openness/Conscientiousness/Extraversion/Agreeableness/Neuroticism): <strong>${avg} / 5.00</strong></p>`;
             }
             document.getElementById('pdf-ocean-results').innerHTML = oceanHtml;
 
-            // 3. Proses Convert HTML ke PDF (Base64 String)
+            // Jalankan Render PDF & Kirim lewat EmailJS
             const element = document.getElementById('pdf-template');
-            element.classList.remove('hidden'); // Tampilkan sebentar di memori untuk dicetak
+            element.classList.remove('hidden');
 
             const opt = {
-                margin:       10,
-                filename:     `Hasil_Tes_${kandidatData.nama.replace(/ /g, '_')}.pdf`,
-                image:        { type: 'jpeg', quality: 0.98 },
-                html2canvas:  { scale: 2 },
-                jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
+                margin: 10,
+                filename: `Hasil_Assessment_${kandidatData.nama.replace(/ /g, '_')}.pdf`,
+                html2canvas: { scale: 2, useCORS: true },
+                jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
             };
 
             try {
-                // Generate PDF dalam bentuk base64 data uri agar bisa dikirim via EmailJS
+                // Konversi halaman template menjadi representasi dokumen base64 PDF
                 const pdfBase64 = await html2pdf().set(opt).from(element).outputPdf('datauristring');
-                element.classList.add('hidden'); // Sembunyikan kembali
+                element.classList.add('hidden');
 
-                // 4. Mengirim Email Menggunakan EmailJS
-                // Anda perlu mengatur template email di dashboard EmailJS yang menerima parameter data_uri
                 const templateParams = {
                     to_email: 'hr@1000daysfund.org',
                     kandidat_nama: kandidatData.nama,
                     kandidat_nohp: kandidatData.nohp,
-                    pdf_attachment: pdfBase64 // Ini mengirimkan file PDF sebagai lampiran/data string
+                    pdf_attachment: pdfBase64
                 };
 
-                // UNTUK AKTIFKAN: Hapus komentar di bawah ini setelah mendaftar di EmailJS
-                /*
-                await emailjs.send('YOUR_SERVICE_ID', 'YOUR_TEMPLATE_ID', templateParams);
-                */
+                // AKTIFKAN INI JIKA EMAILJS SUDAH SIAP:
+                // await emailjs.send('YOUR_SERVICE_ID', 'YOUR_TEMPLATE_ID', templateParams);
                 
-                // Simulasi delay pengiriman jika belum pasang API Key asli
-                await new Promise(resolve => setTimeout(resolve, 2000));
-
-                // Tampilkan halaman sukses
+                await new Promise(res => setTimeout(res, 2500)); // Simulasi Delay pengiriman
                 document.getElementById('loading-status').classList.add('hidden');
                 document.getElementById('success-status').classList.remove('hidden');
-
-            } catch (error) {
-                console.error("Gagal mengirim hasil tes:", error);
-                alert("Terjadi kesalahan saat mengirim hasil tes. Silakan hubungi HR.");
+            } catch (err) {
+                console.error(err);
+                alert("Terjadi kegagalan pembuatan berkas PDF hasil.");
             }
         }
     </script>
